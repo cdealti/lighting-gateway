@@ -218,7 +218,7 @@ public class ZigbeeDevice {
 			//some manufacturers use HA profile ID and ZLL device ID's... 
 			case (ZLL_DEVICEID_EXTENDED_COLOR_LIGHT):	
 			{
-				Type = "ZLL Hue Light"; 
+				Type = "ZLL Light"; 
 				Name= (LightDeviceIdx+1) + ": Hue Light";		
 				break;
 			}
