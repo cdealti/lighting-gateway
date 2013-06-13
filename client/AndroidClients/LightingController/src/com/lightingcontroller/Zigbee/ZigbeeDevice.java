@@ -219,7 +219,7 @@ public class ZigbeeDevice {
 			case (ZLL_DEVICEID_EXTENDED_COLOR_LIGHT):	
 			{
 				Type = "ZLL Light"; 
-				Name= (LightDeviceIdx+1) + ": Hue Light";		
+				Name= (LightDeviceIdx+1) + ": ZLL Light";		
 				break;
 			}
 			default:	Type = "Unknown Device"; Name="Unknown";	
