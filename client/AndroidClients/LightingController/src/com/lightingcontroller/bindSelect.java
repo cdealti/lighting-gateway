@@ -164,11 +164,11 @@ public class bindSelect extends Activity {
     	ToggleButton idDeviceButton = (ToggleButton) findViewById(R.id.IdControllingToggle);
     	if ( (idDeviceButton.isChecked()) && (currControllingDevice != null))
     	{
-    		//ZigbeeAssistant.Identify(currControllingDevice, (short) 0x80);
+    		ZigbeeAssistant.IdentifyDevice(currControllingDevice, (short) 0x80);
     	}
     	else if(currControllingDevice != null)
     	{
-    		//ZigbeeAssistant.Identify(currControllingDevice, (short) 0);    		
+    		ZigbeeAssistant.IdentifyDevice(currControllingDevice, (short) 0);    		
     	}    
     }
     
@@ -176,11 +176,11 @@ public class bindSelect extends Activity {
     	ToggleButton idDeviceButton = (ToggleButton) findViewById(R.id.IdControlledToggle);
     	if ( (idDeviceButton.isChecked()) && (currControlledDevice != null))
     	{
-    		//ZigbeeAssistant.Identify(currControlledDevice, (short) 0x80);
+    		ZigbeeAssistant.IdentifyDevice(currControlledDevice, (short) 0x80);
     	}
     	else if(currControlledDevice != null)
     	{
-    		//ZigbeeAssistant.Identify(currControlledDevice, (short) 0);    		
+    		ZigbeeAssistant.IdentifyDevice(currControlledDevice, (short) 0);    		
     	}    
     }
     

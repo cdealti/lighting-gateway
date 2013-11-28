@@ -34,21 +34,20 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #ifndef SOCKET_SERVER_H
 #define SOCKET_SERVER_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*********************************************************************
  * TYPEDEFS
  */
- 
-typedef void (*socketServerCb_t)( int clientFd );
- 
+
+typedef void (*socketServerCb_t)(int clientFd);
+
 /*********************************************************************
  * INCLUDES
  */
@@ -62,12 +61,12 @@ typedef void (*socketServerCb_t)( int clientFd );
 
 /*
  * serverSocketInit - initialises the server.
- */      
-int32 socketSeverInit( uint32 port );
+ */
+int32 socketSeverInit(uint32 port);
 
 /*
  * serverSocketConfig - initialises the server.
- */      
+ */
 int32 serverSocketConfig(socketServerCb_t rxCb, socketServerCb_t connectCb);
 
 /*
@@ -95,12 +94,10 @@ int32 socketSeverSendAllclients(uint8* buf, uint32 len);
  */
 int32 socketSeverSend(uint8* buf, uint32 len, int32 fdClient);
 
-
 /*
  * socketSeverClose - Closes the client connections.
  */
 void socketSeverClose(void);
-
 
 #ifdef __cplusplus
 }

@@ -1,13 +1,12 @@
 
 SBU_REV= "0.1"
 
-#GCC = gcc
-GCC=/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc
+GCC = gcc
 
 CFLAGS = -Wall -DVERSION_NUMBER=${SBU_REV}
-OBJECTS = zll_controller.o zllSocCmd.o interface_devicelist.o interface_grouplist.o interface_scenelist.o interface_srpcserver.o socket_server.o
-
+OBJECTS = zbController.o ../../zbSocDriver/zbSocCmd.o interface_devicelist.o interface_grouplist.o interface_scenelist.o interface_srpcserver.o socket_server.o SimpleDB.o SimpleDBTxt.o
 DEFS += -D_GNU_SOURCE
+INCLUDE = -I../../zbSocDriver/
 
 APP_NAME=zllGateway.bin
 
@@ -23,3 +22,4 @@ all: ${APP_NAME}
 
 clean:
 	rm -rf *.o ${APP_NAME}
+	rm -rf ../../zbSocDriver/*.o ${APP_NAME}

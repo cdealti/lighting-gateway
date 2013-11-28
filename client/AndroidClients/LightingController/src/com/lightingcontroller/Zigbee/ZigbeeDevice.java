@@ -62,8 +62,6 @@ public class ZigbeeDevice {
 	public boolean hasColourable = false;
 	public boolean hasDimmable = false;
 	public boolean hasSwitchable = false;
-	public boolean hasThermometer = false;
-	public boolean hasPowerUsage = false;
 	public boolean hasOutSwitch = false;
 	public boolean hasOutLeveL = false;
 	public boolean hasOutColor = false;
@@ -374,10 +372,27 @@ public class ZigbeeDevice {
 			default:	Type = "Unknown Device"; Name="Unknown";	
 			}
 		}
-
-		//String notification = "New "+Type+" connected!"; 
-		//ZigbeeNotification.showNotification(notification);
+		
+		if(!_deviceName.isEmpty())
+		{
+			Name = _deviceName;
+		}
 	}
+	
+	public void updateDevice(ZigbeeDevice device)
+	{	
+		Name = device.Name;
+		Type = device.Type;
+		ProfileId = device.ProfileId;
+		DeviceId = device.DeviceId;
+		NetworkAddr = device.NetworkAddr;
+		hasColourable = device.hasColourable;
+		hasDimmable = device.hasDimmable;
+		hasSwitchable = device.hasSwitchable;
+		hasOutLeveL = device.hasOutLeveL;
+		hasOutScene = device.hasOutScene;
+		hasOutGroup = device.hasOutGroup;
+	}	
 	
 	public void addCluster(boolean in, int ClusterId)
 	{
@@ -385,11 +400,9 @@ public class ZigbeeDevice {
 		{
 			switch (ClusterId)
 			{
-			case (0x0402): hasThermometer = true; 			break;
 			case (0x0006): hasSwitchable = true; 			break;
 			case (0x0008): hasDimmable = true; 			break;
 			case (0x0300): hasColourable = true; 			break;
-			case (0x0702): hasPowerUsage = true; 			break;
 			}
 		} else
 		{

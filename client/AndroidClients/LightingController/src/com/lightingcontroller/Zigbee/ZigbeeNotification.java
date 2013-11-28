@@ -36,162 +36,243 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
-**************************************************************************************************/
+ **************************************************************************************************/
 
 package com.lightingcontroller.Zigbee;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.lightingcontroller.R;
+import com.lightingcontroller.zllMain;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
-import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class ZigbeeNotification {
 
-	static Activity acty;
-	static Handler handle = new Handler(); 		
-	static boolean alive;
-	static PopupWindow popwindow = null;
-	
-	static ArrayList<String> notices = new ArrayList<String>();
-	
+	private static Activity acty = null;
+	private static Dialog notificationDialog = null;
+	private static boolean deviceRemove = false;
+
+	static ArrayList<ZigbeeDevice> newDevNotifications = new ArrayList<ZigbeeDevice>();
+
 	static int timeout = 5000;
+	static int cnt = 0;
 	
-	public static void init(Activity a, int time_out)
-	{
-		init(a);
-		timeout = time_out;
-	}
-	
-	public static void init(Activity a)
-	{
+	public static void init(Activity a) {
 		acty = a;
-		if (notices.size() > 0)
-		{
-			for (int i = 0 ; i < notices.size() ; i++)
-			{
-				showNotificationOnScreen(notices.get(i));
-			}
-			for (int i = 0 ; i < notices.size() ; i++)
-			{
-				notices.remove(i);
-			}			
-		}
 	}
-	
-	public static void closing()
-	{
-		if (popwindow != null)
-		{
-			popwindow.dismiss();
-			handle.removeCallbacks(closePopupTask);
-		}
-		popwindow = null;
+
+	public static void closing() {
+		closeDialog();
 		acty = null;
 	}
-	
-	public static void showNotification(String text)
-	{
-		if (acty == null)
-		{
-			notices.add(text);
-		}
-		else
-		{
-			showNotificationOnScreen(text);
-		}
-	}
-	
-	public static void showNotificationOnScreen(final String text)
-	{
-		final TextView text1 = new TextView(acty);
-		text1.setText(text);
-		text1.setTextColor(Color.WHITE);
-		text1.setTextSize(18);
-		text1.setGravity(Gravity.CENTER);
-				
-		if (popwindow == null)
-		{
-			LayoutInflater inflater = (LayoutInflater) acty.getLayoutInflater();
-			View layout = inflater.inflate(R.layout.popup,
-			                               (ViewGroup) acty.findViewById(R.id.toast_layout_root));	
-	
-			((LinearLayout) layout.findViewById(R.id.popup_text_box)).addView(text1);
 
-			popwindow = new PopupWindow(layout,400,100,false); 
-			popwindow.setAnimationStyle(R.style.Animation_Popup);
-			popwindow.setBackgroundDrawable(new BitmapDrawable());
-			popwindow.setOutsideTouchable(false);
-			popwindow.setTouchable(true);
-			popwindow.setTouchInterceptor(new OnTouchListener() {
-			public boolean onTouch(View v, MotionEvent event) {
-				handle.removeCallbacks(closePopupTask);			
-				handle.post(closePopupTask);
-				return false;
-				}
-			});
-			try{
-				acty.runOnUiThread (new Runnable(){
-					public void run() {
-//						if (acty!=null && acty.findViewById(R.id.MainMenu_lay)!=null)
-//							popwindow.showAtLocation(acty.findViewById(R.id.MainMenu_lay), Gravity.CENTER_HORIZONTAL|Gravity.BOTTOM, 0, 0);
-//						else
-//							notices.add(text);
-					}
-				});
-			} catch (Exception e)
+	public static void showNewDeviceNotification(final ZigbeeDevice device) {
+		cnt++;
+		if(cnt > 1)
+			cnt = 0;
+		
+		if (acty != null) {
+			if(notificationDialog != null)
 			{
-				// Dagnabbit.
-				popwindow = null;
+				newDevNotifications.add(device);
+			}
+			else
+			{
+				showNewDeviceNotificationDialog(device);
 			}
 		}
 		else
 		{
 			
-			acty.runOnUiThread (new Runnable(){
-				public void run() {
-					LinearLayout l = (LinearLayout)popwindow.getContentView().findViewById(R.id.popup_text_box);
-					if (l.getChildCount()>2)
-						l.removeViewAt(0);
-					l.addView(text1);
-					popwindow.update();
+		}
+		
+		while (!newDevNotifications.isEmpty()) {
+			if (acty != null) {
+				if(notificationDialog == null)
+				{
+					ZigbeeDevice notifyDevice = newDevNotifications.remove(0);
+					showNewDeviceNotificationDialog(notifyDevice);
 				}
-			});
+			}
 		}
 				
-		handle.removeCallbacks(closePopupTask);
-		handle.postDelayed(closePopupTask, timeout);
-		//SoundManager.playSound(SoundManager.NOTIFY, 1);
+/*		
+		// restart activity to update device drop down		
+		Intent intent = new Intent();
+		intent.setClass(acty, acty.getClass());
+		acty.finish();
+		acty.startActivity(intent);
+*/
 	}
-	
-	
-	private static Runnable closePopupTask = new Runnable() {
-		   public void run() {
-			   if (popwindow!=null)
-			   {
-				   popwindow.dismiss();
-				   popwindow = null;
-			   }
-		   }
-		};
-	
-	
+
+	public static void showNewDeviceNotificationDialog(
+			final ZigbeeDevice device) {
+		// close any existing notification
+		closeDialog();
+		
+		//put device into identify
+		ZigbeeAssistant.setDeviceState(device,true);
+		ZigbeeAssistant.setDeviceLevel(device,0xFF);
+		ZigbeeAssistant.IdentifyDevice(device,(short) 600);
+		
+    	String Title = "New Device Found";
+    	String Msg = "Please Enter the name of the device";
+     	final EditText t = new EditText(acty);
+     	t.setText(device.Name);
+
+		final AlertDialog.Builder builder = new AlertDialog.Builder(acty);
+		builder.setTitle(Title)
+		.setMessage(Msg)
+		.setView(t)
+		.setPositiveButton("OK",  
+		new DialogInterface.OnClickListener()
+		{
+			public void onClick(DialogInterface dialoginterface,int i){	
+				ZigbeeAssistant.setDeviceName(device.Name, t.getText().toString());	
+				zllMain.setCurrentDevice(device);
+				closeDialog();
+				//stop device identifying
+				ZigbeeAssistant.IdentifyDevice(device,(short) 0);
+			}
+	    });
+		
+
+		try {
+			acty.runOnUiThread(new Runnable() {
+				public void run() {
+					if (acty != null) {
+						// if(acty.hasWindowFocus())
+						// {
+						notificationDialog = builder.create();
+						notificationDialog.show();
+						// }
+					}
+				}
+			});
+		} catch (Exception e) {
+
+		}
+	}
+
+	public static void showRemoveDeviceNotification(String deviceStr,
+			final int timeout) {
+		if (acty != null) {
+			// close any existing notification
+			closeDialog();
+
+			final AlertDialog.Builder builder = new AlertDialog.Builder(acty);
+			builder.setTitle("ZigBee Notification")
+					.setCancelable(false)
+					.setMessage("Device Removed: " + deviceStr)
+					.setPositiveButton("Ok",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									// restart activity to update device drop
+									// down
+									Intent intent = new Intent();
+									intent.setClass(acty, acty.getClass());
+									acty.finish();
+									acty.startActivity(intent);
+									closeDialog();
+								}
+							});
+
+			try {
+				acty.runOnUiThread(new Runnable() {
+					public void run() {
+						if (acty != null) {
+							// if(acty.hasWindowFocus())
+							// {
+							notificationDialog = builder.create();
+							notificationDialog.show();
+							// }
+						}
+					}
+				});
+			} catch (Exception e) {
+
+			}
+
+			new Thread(new Runnable() {
+				public void run() {
+					try {
+						Thread.sleep(timeout);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					closeDialog();
+				}
+			}).start();
+
+		}
+	}
+
+	public static void showGeneralNotification(String notification,
+			final int timeout) {
+		if (acty != null) {
+			// close any existing notification
+			closeDialog();
+
+			final AlertDialog.Builder builder = new AlertDialog.Builder(acty);
+			builder.setTitle("ZigBee Notification").setCancelable(false)
+					.setMessage(notification);
+
+			try {
+				acty.runOnUiThread(new Runnable() {
+					public void run() {
+						if (acty != null) {
+							// if(acty.hasWindowFocus())
+							// {
+							notificationDialog = builder.create();
+							notificationDialog.show();
+							// }
+						}
+					}
+				});
+			} catch (Exception e) {
+
+			}
+
+			new Thread(new Runnable() {
+				public void run() {
+					try {
+						Thread.sleep(timeout);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					closeDialog();
+				}
+			}).start();
+		}
+	}
+
+	private static void closeDialog() {
+		if (notificationDialog != null) {
+			notificationDialog.cancel();
+		}
+		notificationDialog = null;
+	}
 }

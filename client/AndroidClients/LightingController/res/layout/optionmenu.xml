@@ -4,6 +4,8 @@
     android:layout_height="wrap_content"    
     android:maxRows="1"
     android:maxItemsPerRow="6"   >
+            <item android:id="@+id/optionMenuAddDevice"
+                  android:icon="@drawable/ic_menu_add" />     
             <item android:id="@+id/optionMenuGroups"
                   android:icon="@drawable/ic_menu_group" />
             <item android:id="@+id/optionMenuScenes"
@@ -11,5 +13,5 @@
             <item android:id="@+id/optionMenuBinding"
                   android:icon="@drawable/ic_menu_bind" />
             <item android:id="@+id/optionMenuListDevices"
-                  android:icon="@drawable/ic_menu_list_devices" />
+                  android:icon="@drawable/ic_menu_list_devices" />           
 </menu>

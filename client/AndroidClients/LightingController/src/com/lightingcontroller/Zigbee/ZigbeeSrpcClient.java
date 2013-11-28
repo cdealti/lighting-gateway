@@ -91,45 +91,49 @@ public class ZigbeeSrpcClient {
 	
 	//SRPC CMD ID's	
 	//define the outgoing RPSC command ID's
-	private static final byte RPCS_NEW_ZLL_DEVICE     = (byte) 0x0001;
-	private static final byte RPCS_DEV_ANNCE		      = (byte) 0x0002;
-	private static final byte RPCS_SIMPLE_DESC	      = (byte) 0x0003;
-	private static final byte RPCS_TEMP_READING       = (byte) 0x0004;
-	private static final byte RPCS_POWER_READING      = (byte) 0x0005;
-	private static final byte RPCS_PING               = (byte) 0x0006;
-	private static final byte RPCS_GET_DEV_STATE_RSP  = (byte) 0x0007;
-	private static final byte RPCS_GET_DEV_LEVEL_RSP  = (byte) 0x0008;
-	private static final byte RPCS_GET_DEV_HUE_RSP    = (byte) 0x0009;
-	private static final byte RPCS_GET_DEV_SAT_RSP    = (byte) 0x000a;
-	private static final byte RPCS_ADD_GROUP_RSP      = (byte) 0x000b;
-	private static final byte RPCS_GET_GROUP_RSP      = (byte) 0x000c;
-	private static final byte RPCS_ADD_SCENE_RSP      = (byte) 0x000d;
-	private static final byte RPCS_GET_SCENE_RSP      = (byte) 0x000e;
+	private static final byte SRPC_NEW_DEVICE     = (byte) 0x0001;
+	private static final byte SRPC_RESERVED_1		  = (byte) 0x0002;
+	private static final byte SRPC_RESERVED_2	      = (byte) 0x0003;
+	private static final byte SRPC_RESERVED_3         = (byte) 0x0004;
+	private static final byte SRPC_RESERVED_4         = (byte) 0x0005;
+	private static final byte SRPC_RESERVED_5         = (byte) 0x0006;
+	private static final byte SRPC_GET_DEV_STATE_RSP  = (byte) 0x0007;
+	private static final byte SRPC_GET_DEV_LEVEL_RSP  = (byte) 0x0008;
+	private static final byte SRPC_GET_DEV_HUE_RSP    = (byte) 0x0009;
+	private static final byte SRPC_GET_DEV_SAT_RSP    = (byte) 0x000a;
+	private static final byte SRPC_ADD_GROUP_RSP      = (byte) 0x000b;
+	private static final byte SRPC_GET_GROUP_RSP      = (byte) 0x000c;
+	private static final byte SRPC_ADD_SCENE_RSP      = (byte) 0x000d;
+	private static final byte SRPC_GET_SCENE_RSP      = (byte) 0x000e;
 
 
-	//define incoming RPCS command ID's
-	private static final byte RPCS_CLOSE              = (byte) 0x80;
-	private static final byte RPCS_GET_DEVICES        = (byte) 0x81;
-	private static final byte RPCS_SET_DEV_STATE      = (byte) 0x82;	
-	private static final byte RPCS_SET_DEV_LEVEL      = (byte) 0x83;	
-	private static final byte RPCS_SET_DEV_COLOR      = (byte) 0x84;
-	private static final byte RPCS_GET_DEV_STATE      = (byte) 0x85;	
-	private static final byte RPCS_GET_DEV_LEVEL      = (byte) 0x86;	
-	private static final byte RPCS_GET_DEV_HUE        = (byte) 0x87;
-	private static final byte RPCS_GET_DEV_SAT        = (byte) 0x88;
-	private static final byte RPCS_BIND_DEVICES       = (byte) 0x89;
-	private static final byte RPCS_GET_THERM_READING  = (byte) 0x8a;
-	private static final byte RPCS_GET_POWER_READING  = (byte) 0x8b;
-	private static final byte RPCS_DISCOVER_DEVICES   = (byte) 0x8c;
-	private static final byte RPCS_SEND_ZCL           = (byte) 0x8d;
-	private static final byte RPCS_GET_GROUPS         = (byte) 0x8e;	
-	private static final byte RPCS_ADD_GROUP          = (byte) 0x8f;	
-	private static final byte RPCS_GET_SCENES         = (byte) 0x90;	
-	private static final byte RPCS_STORE_SCENE        = (byte) 0x91;	
-	private static final byte RPCS_RECALL_SCENE       = (byte) 0x92;	
-	private static final byte RPCS_IDENTIFY_DEVICE    = (byte) 0x93;	
-	private static final byte RPCS_CHANGE_DEVICE_NAME = (byte) 0x94;   
-
+	//define incoming SRPC command ID's
+	private static final byte SRPC_CLOSE              = (byte) 0x80;
+	private static final byte SRPC_GET_DEVICES        = (byte) 0x81;
+	private static final byte SRPC_SET_DEV_STATE      = (byte) 0x82;	
+	private static final byte SRPC_SET_DEV_LEVEL      = (byte) 0x83;	
+	private static final byte SRPC_SET_DEV_COLOR      = (byte) 0x84;
+	private static final byte SRPC_GET_DEV_STATE      = (byte) 0x85;	
+	private static final byte SRPC_GET_DEV_LEVEL      = (byte) 0x86;	
+	private static final byte SRPC_GET_DEV_HUE        = (byte) 0x87;
+	private static final byte SRPC_GET_DEV_SAT        = (byte) 0x88;
+	private static final byte SRPC_BIND_DEVICES       = (byte) 0x89;
+	private static final byte SRPC_RESERVED_6  		  = (byte) 0x8a;
+	private static final byte SRPC_RESERVED_7         = (byte) 0x8b;
+	private static final byte SRPC_RESERVED_8         = (byte) 0x8c;
+	private static final byte SRPC_RESERVED_9         = (byte) 0x8d;
+	private static final byte SRPC_GET_GROUPS         = (byte) 0x8e;	
+	private static final byte SRPC_ADD_GROUP          = (byte) 0x8f;	
+	private static final byte SRPC_GET_SCENES         = (byte) 0x90;	
+	private static final byte SRPC_STORE_SCENE        = (byte) 0x91;	
+	private static final byte SRPC_RECALL_SCENE       = (byte) 0x92;	
+	private static final byte SRPC_IDENTIFY_DEVICE    = (byte) 0x93;	
+	private static final byte SRPC_CHANGE_DEVICE_NAME = (byte) 0x94;  
+	private static final byte SRPC_REMOVE_DEVICE 	  = (byte) 0x95; 
+	private static final byte SRPC_OPEN_NETWORK 	  = (byte) 0x9c; 
+	
+	private static final short JOIN_AUTH_NUM 		  = (short) 0xebd4;
+	
 	//SRPC AfAddr Addr modes ID's	
 	public static final byte AddrNotPresent = 0;
 	public static final byte AddrGroup = 1;
@@ -150,12 +154,13 @@ public class ZigbeeSrpcClient {
 		switch (msg[msgPtr + SRPC_CMD_ID_POS])
 		{
 
-		case RPCS_NEW_ZLL_DEVICE:
+		case SRPC_NEW_DEVICE:
 		{
 			int profileId=0, deviceId=0, nwkAddr=0; 
 			char endPoint;
 			String deviceName = "";
 			byte[] ieee = new byte[8];
+			byte newDevFlag;
 
 			msgLen = msg[msgPtr + SRPC_CMD_LEN_POS] + 2;
 			//index passed len and cmd ID
@@ -190,14 +195,12 @@ public class ZigbeeSrpcClient {
 			
             //index passed version
 			msgPtr++;
-			
-			//index passed device name
+
 			int nameSize = msg[msgPtr++];
 			for(int i = 0; i < nameSize; i++)
 			{
 				deviceName += (char) msg[msgPtr++];
 			}			
-			msgPtr += nameSize;
 			
             //index passed status
 			msgPtr++;
@@ -208,11 +211,13 @@ public class ZigbeeSrpcClient {
 				ieee[i] = msg[msgPtr++];
 			}			
 			
-            ZigbeeAssistant.newDevice(profileId, deviceId, nwkAddr, endPoint, ieee, deviceName);	               
-            	                        
+			newDevFlag = (byte) msg[msgPtr++];
+
+			ZigbeeAssistant.newDevice(profileId, deviceId, nwkAddr, endPoint, ieee, deviceName, newDevFlag);
+			
             break;
 		}
-		case RPCS_ADD_GROUP_RSP:
+		case SRPC_ADD_GROUP_RSP:
 		{
 			short groupId = 0;
 			msgLen = msg[msgPtr + SRPC_CMD_LEN_POS] + 2;
@@ -244,9 +249,10 @@ public class ZigbeeSrpcClient {
 			break;
 		}
 						
-		case RPCS_GET_GROUP_RSP:
+		case SRPC_GET_GROUP_RSP:
 		{
 			short groupId = 0;
+			String groupName = "";
 			msgLen = msg[msgPtr + SRPC_CMD_LEN_POS] + 2;
 			  
 			//index passed len and cmd ID
@@ -259,15 +265,19 @@ public class ZigbeeSrpcClient {
             	int groupIdTemp = (msg[msgPtr] & 0xff);            	 
             	groupId += (groupIdTemp << (8 * i));             	
             }			
+			            
+			int nameSize = msg[msgPtr++];
+			for(int i = 0; i < nameSize; i++)
+			{
+				groupName += (char) msg[msgPtr++];
+			}
 			
-            String groupNameStr = new String(msg, msgPtr+1, msg[msgPtr], Charset.defaultCharset());
-			
-            ZigbeeAssistant.newGroup(groupNameStr, groupId, ZigbeeGroup.groupStatusActive);
+            ZigbeeAssistant.newGroup(groupName, groupId, ZigbeeGroup.groupStatusActive);
             
 			break;
 		}	
 		
-		case RPCS_ADD_SCENE_RSP:
+		case SRPC_ADD_SCENE_RSP:
 		{
 			short groupId = 0;
 			byte sceneId = 0;
@@ -303,10 +313,11 @@ public class ZigbeeSrpcClient {
 			break;
 		}
 						
-		case RPCS_GET_SCENE_RSP:
+		case SRPC_GET_SCENE_RSP:
 		{
 			short groupId = 0;
 			byte sceneId = 0;
+			String sceneName = "";
 			msgLen = msg[msgPtr + SRPC_CMD_LEN_POS] + 2;
 			  
 			//index passed len and cmd ID
@@ -322,14 +333,18 @@ public class ZigbeeSrpcClient {
             
             //Get the sceneId
             sceneId = (byte) msg[msgPtr++];            
+			            
+			int nameSize = msg[msgPtr++];
+			for(int i = 0; i < nameSize; i++)
+			{
+				sceneName += (char) msg[msgPtr++];
+			}
 			
-            String sceneNameStr = new String(msg, msgPtr+1, msg[msgPtr], Charset.defaultCharset());
-			
-            ZigbeeAssistant.newScene(sceneNameStr, groupId, sceneId, ZigbeeScene.sceneStatusActive);
+            ZigbeeAssistant.newScene(sceneName, groupId, sceneId, ZigbeeScene.sceneStatusActive);
             
 			break;
 		}
-		case RPCS_GET_DEV_STATE_RSP:
+		case SRPC_GET_DEV_STATE_RSP:
 		{
 			short nwkAddr = 0;
 			byte endPoint = 0;
@@ -366,7 +381,7 @@ public class ZigbeeSrpcClient {
             }            				
 			break;
 		}
-		case RPCS_GET_DEV_LEVEL_RSP:
+		case SRPC_GET_DEV_LEVEL_RSP:
 		{
 			short nwkAddr = 0;
 			byte endPoint = 0;
@@ -403,7 +418,7 @@ public class ZigbeeSrpcClient {
             }            				
 			break;			
 		}		
-		case RPCS_GET_DEV_HUE_RSP:
+		case SRPC_GET_DEV_HUE_RSP:
 		{
 			short nwkAddr = 0;
 			byte endPoint = 0;
@@ -440,7 +455,7 @@ public class ZigbeeSrpcClient {
             }            				
 			break;
 		}
-		case RPCS_GET_DEV_SAT_RSP:
+		case SRPC_GET_DEV_SAT_RSP:
 		{
 			short nwkAddr = 0;
 			byte endPoint = 0;
@@ -493,7 +508,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_SET_DEV_STATE;
+		msg[SRPC_CMD_ID_POS] = SRPC_SET_DEV_STATE;
 		msg[SRPC_CMD_LEN_POS] = 13;
 		
 		//set ptr to point to data
@@ -531,7 +546,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_SET_DEV_LEVEL;
+		msg[SRPC_CMD_ID_POS] = SRPC_SET_DEV_LEVEL;
 		msg[SRPC_CMD_LEN_POS] = 15;
 		
 		//set ptr to point to data
@@ -564,7 +579,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_SET_DEV_COLOR;
+		msg[SRPC_CMD_ID_POS] = SRPC_SET_DEV_COLOR;
 		msg[SRPC_CMD_LEN_POS] = 16;
 		
 		//set ptr to point to data
@@ -600,7 +615,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_DEV_STATE;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_DEV_STATE;
 		msg[SRPC_CMD_LEN_POS] = 13;
 		
 		//set ptr to point to data
@@ -627,7 +642,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_DEV_LEVEL;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_DEV_LEVEL;
 		msg[SRPC_CMD_LEN_POS] = 13;
 		
 		//set ptr to point to data
@@ -654,7 +669,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_DEV_HUE;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_DEV_HUE;
 		msg[SRPC_CMD_LEN_POS] = 13;
 		
 		//set ptr to point to data
@@ -681,7 +696,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_DEV_SAT;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_DEV_SAT;
 		msg[SRPC_CMD_LEN_POS] = 13;
 		
 		//set ptr to point to data
@@ -708,7 +723,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_BIND_DEVICES;
+		msg[SRPC_CMD_ID_POS] = SRPC_BIND_DEVICES;
 		msg[SRPC_CMD_LEN_POS] = 22;
 		
 		//set ptr to point to data
@@ -758,7 +773,7 @@ public class ZigbeeSrpcClient {
 		byte[] msg = new byte[2];
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_DEVICES;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_DEVICES;
 		msg[SRPC_CMD_LEN_POS] = 0;
 		
 		sendSrpc(msg);
@@ -769,7 +784,7 @@ public class ZigbeeSrpcClient {
 		byte[] msg = new byte[2];
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_GROUPS;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_GROUPS;
 		msg[SRPC_CMD_LEN_POS] = 0;
 		
 		sendSrpc(msg);
@@ -780,7 +795,7 @@ public class ZigbeeSrpcClient {
 		byte[] msg = new byte[2];
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_GET_SCENES;
+		msg[SRPC_CMD_ID_POS] = SRPC_GET_SCENES;
 		msg[SRPC_CMD_LEN_POS] = 0;
 		
 		sendSrpc(msg);
@@ -792,7 +807,7 @@ public class ZigbeeSrpcClient {
 		byte msgIdx;
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_ADD_GROUP;
+		msg[SRPC_CMD_ID_POS] = SRPC_ADD_GROUP;
 		msg[SRPC_CMD_LEN_POS] = (byte) (12 + groupName.length() + 1);
 		
 		//set ptr to point to data
@@ -825,7 +840,7 @@ public class ZigbeeSrpcClient {
 		byte msgIdx;
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_STORE_SCENE;
+		msg[SRPC_CMD_ID_POS] = SRPC_STORE_SCENE;
 		msg[SRPC_CMD_LEN_POS] = (byte) (15 + sceneName.length());
 		
 		//set ptr to point to data
@@ -861,7 +876,7 @@ public class ZigbeeSrpcClient {
 		byte msgIdx;
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_RECALL_SCENE;
+		msg[SRPC_CMD_ID_POS] = SRPC_RECALL_SCENE;
 		msg[SRPC_CMD_LEN_POS] = (byte) (15 + sceneName.length());
 		
 		//set ptr to point to data
@@ -899,7 +914,7 @@ public class ZigbeeSrpcClient {
 		byte  msgIdx;
 		 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_IDENTIFY_DEVICE;
+		msg[SRPC_CMD_ID_POS] = SRPC_IDENTIFY_DEVICE;
 		msg[SRPC_CMD_LEN_POS] = 14;
 		
 		//set ptr to point to data
@@ -917,20 +932,21 @@ public class ZigbeeSrpcClient {
 		//pad out pan ID
 		msgIdx+=2;
 
-		//set transitionTime
-		msg[msgIdx++] = (byte) identifyTime;		
+		//set transitionTime		
+		msg[msgIdx++] = (byte) (identifyTime & 0xFF);
+		msg[msgIdx++] = (byte) ((identifyTime & 0xFF00)>>8);			
 		
 		sendSrpc(msg);		
 	}	
 	
 	public static void changeDeviceName(ZigbeeDevice device, String deviceName)
 	{
-		byte[] msg = new byte[4 + deviceName.length()];
+		byte[] msg = new byte[6 + deviceName.length()];
 		byte msgIdx;
 
 		//set SRPC len and CMD ID
-		msg[SRPC_CMD_ID_POS] = RPCS_CHANGE_DEVICE_NAME;
-		msg[SRPC_CMD_LEN_POS] = (byte) (2 + deviceName.length());
+		msg[SRPC_CMD_ID_POS] = SRPC_CHANGE_DEVICE_NAME;
+		msg[SRPC_CMD_LEN_POS] = (byte) (4 + deviceName.length());
 		
 		//set ptr to point to data
 		msgIdx=2;		
@@ -938,6 +954,9 @@ public class ZigbeeSrpcClient {
 		//set afAddrMode_t nwk address		
 		msg[msgIdx++] = (byte) (device.NetworkAddr & 0xFF);
 		msg[msgIdx++] = (byte) ((device.NetworkAddr & 0xFF00)>>8);	
+		
+		//set EP
+		msg[msgIdx++] = (byte) (device.EndPoint);
 
 		msg[msgIdx++] = (byte) deviceName.length();
 		for(int i = 0; i < deviceName.length(); i++)
@@ -947,6 +966,29 @@ public class ZigbeeSrpcClient {
 		
 		sendSrpc(msg);					
 	}	
+	
+	
+	public static void openNetwork(byte duration)
+	{
+		byte[] msg = new byte[5];
+		byte msgIdx;
+
+		//set SRPC len and CMD ID
+		msg[SRPC_CMD_ID_POS] = SRPC_OPEN_NETWORK;
+		msg[SRPC_CMD_LEN_POS] = (byte) (3);
+		
+		//set ptr to point to data
+		msgIdx=2;		
+
+		//set duration		
+		msg[msgIdx++] = duration;
+		
+		//set join auth
+		msg[msgIdx++] = (byte) (JOIN_AUTH_NUM & 0xFF);
+		msg[msgIdx++] = (byte) ((JOIN_AUTH_NUM & 0xFF00)>>8);		
+		
+		sendSrpc(msg);					
+	}
 	
 	public static int clientConnect( )
 	{
@@ -1001,7 +1043,12 @@ public class ZigbeeSrpcClient {
 			new Thread(new Runnable() 
 			{    
 				public void run() {   
-					Listen();
+					try {
+						Listen();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}  
 			}).start();
 			
@@ -1028,14 +1075,35 @@ public class ZigbeeSrpcClient {
 
 	public static void sendSrpc(byte[] msg)
 	{
-
 		try{		
 			outStream.write( msg );	
 		} catch (Exception e){}		
 	}
 	
-	private static void Listen() {
+	private static void Listen() throws IOException {
 	//listen for Packets
+		while(true)
+		{	
+			byte[] RxBuffer = new byte[1024];
+			int bytesRead = ReadMessage(inStream, RxBuffer);
+			
+			Log.i("Process Message:", "[" + bytesRead + "]: RPC CMD: " + RxBuffer[0] + ", RPC LEN: " + RxBuffer[1]);
+			
+			if(bytesRead == -1)
+			{
+				//error
+			}
+			else
+			{
+				int bytesProcessed;
+				bytesProcessed = rpcsProcessIncoming(RxBuffer, 0);
+				if ( bytesRead > bytesProcessed )
+				{
+					//error did not process full buffer
+				}
+			}
+		}
+/*			
 		while(true)
 		{		
 			byte[] RxBuffer = new byte[1024];
@@ -1051,7 +1119,40 @@ public class ZigbeeSrpcClient {
 				e.printStackTrace();
 			}
 		}
+*/		
 	}
+	
+	private static int ReadMessage(InputStream is, byte[] bytes) throws IOException {
+	    byte[] rpcHeader = new byte[2];
+	    int offset, len;
+	    int read;
+	    
+	    read = is.read(rpcHeader, 0, 2);
+	    len = rpcHeader[1] + 2;
+	    
+	    bytes[0] = rpcHeader[0];
+	    bytes[1] = rpcHeader[1];
+	    
+	    if (read == -1) { return -1;}
+	    
+	    Log.i("ReadMessage", "RPC CMD: " + rpcHeader[0] + ", RPC LEN: " + rpcHeader[1]);
+	    
+	    offset = 2;
+	    while (offset < len) {
+	        read = is.read(bytes, offset, len - offset);
+	        if (read == -1) {
+/*	            if ( offset == 0 ) {
+	                return -1;
+	            } else {
+	                return offset;
+	            }*/
+	        } else {
+	            offset += read;
+	        }
+	    }
+
+	    return len;
+	}	
 
 	public static String getGatewayIp() {
 		return gatewayIp;

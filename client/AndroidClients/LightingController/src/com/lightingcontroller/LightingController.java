@@ -145,7 +145,7 @@ public class LightingController extends Activity{
 	  		          ZigbeeSrpcClient.discoverGroups();
 	  		          ZigbeeSrpcClient.discoverScenes();
 	  		          //wait for responses
-	  		          try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e) {e.printStackTrace();}  
+	  		          try { TimeUnit.MILLISECONDS.sleep(500); } catch (InterruptedException e) {e.printStackTrace();}  
 	
 	  		          startActivity(new Intent(LightingController.this, zllMain.class));  		        	
 	  		        }

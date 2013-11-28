@@ -44,6 +44,7 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -72,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 import com.lightingcontroller.Zigbee.ZigbeeAssistant;
 import com.lightingcontroller.Zigbee.ZigbeeDevice;
 import com.lightingcontroller.Zigbee.ZigbeeGroup;
+import com.lightingcontroller.Zigbee.ZigbeeNotification;
 import com.lightingcontroller.ColourPicker;
 
 public class zllMain extends Activity {
@@ -80,9 +82,9 @@ public class zllMain extends Activity {
 	
 	public static ColourPicker colourPicker;
 	private static ZigbeeGroup currGroup;	
-	private static ZigbeeDevice currDevice;
+	private static ZigbeeDevice currDevice = null;
 	private Spinner deviceSpinner;
-	private ArrayAdapter<String> deviceSpinnerAdapter;
+	private static ArrayAdapter<String> deviceSpinnerAdapter;
 	private int currentDeviceSpinnerSelection=0;	
 	
 	ProgressDialog bar;	
@@ -147,6 +149,8 @@ public class zllMain extends Activity {
         
         addItemsOnDeviceSpinner();
         addListenerOnDeviceSpinnerItemSelection();  	   
+        
+        ZigbeeNotification.init(this);
     }    
 
     // add items into spinner dynamically
@@ -164,6 +168,11 @@ public class zllMain extends Activity {
         for (int i = 0 ; i < groupList.size() ; i++)
         {        	
         	deviceSpinnerAdapter.add("group: " + groupList.get(i).getGroupName());
+        }        
+        
+        if( (currDevice == null) && (devList.size() > 0) )
+        {
+        	currDevice = devList.get(0);
         }        
     }
    
@@ -187,7 +196,7 @@ public class zllMain extends Activity {
     	    		ZigbeeAssistant.getDeviceLevel(currDevice);
     	    		ZigbeeAssistant.getDeviceHue(currDevice);
     	    		ZigbeeAssistant.getDeviceSat(currDevice);
-    	    		//new waitRspTask().execute("Device Select");	
+    	    		new waitRspTask().execute("Device Select");	
     	    		
     	    		currGroup = null;
     	    	}
@@ -243,18 +252,22 @@ public class zllMain extends Activity {
 	            	if( !currDevice.getCurrentStateUpdated() )
 	            	{
 	            		ZigbeeAssistant.getDeviceState(currDevice);
+	            		try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {e.printStackTrace();}  
 	            	}
 	            	if(	!currDevice.getCurrentLevelUpdated() )
 	            	{
 	            		ZigbeeAssistant.getDeviceLevel(currDevice);
+	            		try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {e.printStackTrace();}  
 	            	}
 	            	if(	!currDevice.getCurrentHueUpdated() )
 	            	{	            	
 	            		ZigbeeAssistant.getDeviceHue(currDevice);
+	            		try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {e.printStackTrace();}  
 	            	}
 	            	if(	!currDevice.getCurrentSatUpdated() )
 	            	{	            	
 	            		ZigbeeAssistant.getDeviceSat(currDevice);
+	            		try { TimeUnit.MILLISECONDS.sleep(10); } catch (InterruptedException e) {e.printStackTrace();}  
 	            	}	            	            	
 	            }
             	            
@@ -383,6 +396,11 @@ public class zllMain extends Activity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+	        case R.id.optionMenuAddDevice:
+	        {
+	        	new addDeviceTask().execute("Add Device");
+	        }            	
+	            break;            
             case R.id.optionMenuGroups: 
             	startActivity(new Intent(zllMain.this, groupSelect.class));
                 break;                 
@@ -408,12 +426,17 @@ public class zllMain extends Activity {
         		alert = builder.create();
         		alert.show();
             }            	
-                break;
+                break;            
         }
         return true;
     }
  
     public void deviceChangeNameButton(View view)
+    {
+    	deviceChangeName();
+    }
+    
+    public void deviceChangeName()
     { 
     	String Title = "Set Name";
     	String Msg = "Please Enter the name of the device";
@@ -498,4 +521,84 @@ public class zllMain extends Activity {
             ZigbeeAssistant.setDeviceLevel(currGroup, (char) level);
 		}    	
     }	
+    
+    class addDeviceTask extends AsyncTask<String , Integer, Void>
+    {
+    	private boolean rspSuccess;
+    	int numCurrentDevices;
+    	int timeoutCnt;
+    	String param;
+        @Override
+        protected void onPreExecute()
+        {
+            bar = new ProgressDialog(zllMain.this);
+            bar.setMessage("Searching For New Device");
+            bar.setIndeterminate(true);
+            bar.show();
+            
+            //count number of devices
+            numCurrentDevices = ZigbeeAssistant.getDevices().size();
+            
+            //open network
+            ZigbeeAssistant.openNetwork((byte)60);
+            
+        } 
+        @Override
+        protected Void doInBackground(String... params) 
+        {
+        	param = params[0];
+        	
+        	//30s time out
+        	for(timeoutCnt = 0; timeoutCnt < 60; timeoutCnt++)
+        	{
+	        	try { TimeUnit.MILLISECONDS.sleep(500); } catch (InterruptedException e) {e.printStackTrace();}        
+	            	
+	        	if( ZigbeeAssistant.getDevices().size() > numCurrentDevices)
+	        	{        		
+	        		rspSuccess = true;            		
+	        		return null;
+	        	}
+        	}
+        	
+    		rspSuccess = false;            		
+    		return null;        	
+        }
+        @Override
+        protected void onPostExecute(Void result) 
+        {
+            bar.dismiss();
+            
+            if (rspSuccess == false)
+        	{
+    	    	AlertDialog show = new AlertDialog.Builder(zllMain.this)
+    			.setTitle(param)
+    			.setMessage("No new devices found\n")
+    			.setPositiveButton("OK",             
+    			new DialogInterface.OnClickListener()
+    			{			
+    				public void onClick(DialogInterface dialoginterface,int i){				    	
+    				}		
+    			})	    	    		
+    			.show();
+        	}
+            else
+            {
+            	//Let notification change the name     	    	
+            }                      
+        }
+    } 
+    
+    public static void setCurrentDevice(ZigbeeDevice device)
+    {
+    	currDevice = device;
+        deviceSpinnerAdapter.clear();
+        List<ZigbeeDevice> tList = ZigbeeAssistant.getDevices();
+        for (int j = 0 ; j < tList.size() ; j++)
+        {
+        	if (tList.get(j).hasColourable || tList.get(j).hasSwitchable || tList.get(j).hasDimmable)
+        	{        	
+        		deviceSpinnerAdapter.add(tList.get(j).Name);
+        	}
+        }     	
+    }
 }

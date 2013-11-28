@@ -49,6 +49,4 @@ public class optionsMenu extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.optionmenu);
     }
-    
- 
 }

@@ -40,8 +40,7 @@
 #define INTERFACE_SCENELIST_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*********************************************************************
@@ -49,32 +48,39 @@ extern "C"
  */
 #include <stdint.h>
 
-typedef struct
-{
-  uint16_t groupId;
-  uint8_t sceneId;
-  char *sceneNameStr;
-}sceneListItem_t;
+typedef struct sceneMembersRecord_s {
+	struct sceneMembersRecord_s * next;
+	uint16_t nwkAddr;
+	uint8_t endpoint;
+} sceneMembersRecord_t;
+
+typedef struct {
+	char *name;
+	sceneMembersRecord_t *members;
+	void *next;
+	uint8_t sceneId;
+	uint16_t groupId;
+} sceneRecord_t;
 
 /*
  * sceneListAddScene - create a scene and add a rec fto the list.
  */
-uint8_t sceneListAddScene( char *sceneNameStr, uint16_t groupId );
+uint8_t sceneListAddScene(char *sceneNameStr, uint16_t groupId);
 
 /*
  * sceneListAddScene - gets the scen id of a a scene
  */
-uint8_t sceneListGetSceneId( char *sceneNameStr, uint16_t groupId );
+uint8_t sceneListGetSceneId(char *sceneNameStr, uint16_t groupId);
 
 /*
- * sceneListGetNextScene - Return the next scene in the list..
+ * sceneListGetNextScene - Return the next scene in the list.
  */
-sceneListItem_t* sceneListGetNextScene( char *sceneNameStr, uint16_t groupId );
+sceneRecord_t* sceneListGetNextScene(uint32_t *context);
 
 /*
- * sceneListRestorScenes - Restore Scene List from file.
+ * groupListInitDatabase - Restore Scene List from file.
  */
-void sceneListRestorScenes( void );
+void groupListInitDatabase(char * dbFilename);
 
 #ifdef __cplusplus
 }

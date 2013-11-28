@@ -1,5 +1,5 @@
 /**************************************************************************************************
- * Filename:       interface_devicelist.c
+ * Filename:       interface_scenelist.c
  * Description:    Socket Remote Procedure Call Interface - sample device application.
  *
  *
@@ -45,362 +45,188 @@
 #include <unistd.h>
 
 #include "interface_scenelist.h"
+#include "hal_types.h"
+#include "SimpleDBTxt.h"
+
+static db_descriptor * db;
 
 /*********************************************************************
  * TYPEDEFS
  */
- 
-typedef struct
-{
-  uint8_t sceneId;
-  uint16_t groupId;
-  char *sceneNameStr;
-  void   *next;
-}sceneRecord_t;
- 
-sceneRecord_t *sceneRecordHead = NULL;
+typedef struct {
+	char* name;
+	uint16 groupId;
+} scene_key_NA_GID;
 
 /*********************************************************************
  * LOCAL FUNCTION PROTOTYPES
  */ 
-static sceneRecord_t* createSceneRec( char *sceneNameStr, uint8_t sceneId, uint16_t groupId, uint8_t storeToFile );
-static sceneRecord_t* findSceneRec( char *sceneNameStr, uint16_t groupId );
-static uint16_t getFreeSceneId(void);
-static void writeSceneListToFile( sceneRecord_t *device );
-static void readSceneListFromFile( void );
+static char * sceneListComposeRecord(sceneRecord_t *group, char * record);
+static sceneRecord_t * sceneListParseRecord(char * record);
+static int sceneListCheckKeyId(char * record, uint8_t * key);
+static int sceneListCheckKeyNameGid(char * record, scene_key_NA_GID * key);
+static sceneRecord_t * sceneListGetSceneByNameGid(char *sceneNameStr, uint16_t groupId);
+static uint8_t sceneListGetUnusedSceneId(void);
 
 /*********************************************************************
  * FUNCTIONS
  *********************************************************************/
 
-/*********************************************************************
- * @fn      createSceneRec
- *
- * @brief   create a scene and rec to the list.
- *
- * @return  none
- */
-static sceneRecord_t* createSceneRec( char *sceneNameStr, uint8_t sceneId, uint16_t groupId, uint8_t storeToFile )
-{  
-  //printf("createSceneRec++: sceneId %x, groupId %x\n", sceneId, groupId);
-  
-  //does it already exist  
-  if( findSceneRec( sceneNameStr, groupId ) )
-  {
-    //printf("createSceneRec: Device already exists\n");
-    return 0;
-  }
-      
-  sceneRecord_t *newScene = malloc( sizeof( sceneRecord_t ) );
-  
-  newScene->sceneNameStr = malloc(sceneNameStr[0]+1);
-  memcpy( newScene->sceneNameStr, sceneNameStr, sceneNameStr[0]+1);
-  
-  //set sceneId
-  newScene->sceneId = sceneId;   
-  //set groupId
-  newScene->groupId = groupId; 
-  //NULL the pointers
-  newScene->next = NULL;
-    
-  //store the record
-  if(sceneRecordHead)
-  {
-    sceneRecord_t *srchRec;
-
-    //find the end of the list and add the record
-    srchRec = sceneRecordHead;
-    // Stop at the last record
-    while ( srchRec->next )
-      srchRec = srchRec->next;
-
-    // Add to the list
-    srchRec->next = newScene; 
-  }
-  else
-    sceneRecordHead = newScene;
-      
-  if(storeToFile)
-  {
-    writeSceneListToFile(newScene);
-  }
-  
-  //printf("createSceneRec--\n");
-  return newScene;
-}
-
-/*********************************************************************
- * @fn      findSceneRec
- *
- * @brief   find a record in the list that matches scene and group.
- *
- *
- * @return  none
- */
-static sceneRecord_t* findSceneRec( char *sceneNameStr, uint16_t groupId )
+void sceneListInitDatabase(char * dbFilename)
 {
-  sceneRecord_t *srchRec = sceneRecordHead;
-
-  //printf("findSceneRec++\n");
-  // find record
-  while ( (srchRec != NULL) ) 
-  {
-      //printf("findSceneRec: srchRec:%x\n", (uint32_t) srchRec);
-      //printf("findSceneRec: srchRec->sceneNameStr:%x\n", (uint32_t) srchRec->sceneNameStr);
-      //printf("findSceneRec: sceneNameStr:%x\n", (uint32_t) sceneNameStr);
-      if(srchRec->sceneNameStr[0] == sceneNameStr[0])
-      {
-        if( (strncmp(srchRec->sceneNameStr, sceneNameStr, srchRec->sceneNameStr[0]) == 0) &&
-          srchRec->groupId == groupId)
-        {
-          //we found the scene
-          //printf("findSceneRec: scene found\n");
-          break;
-        }
-      }
-      srchRec = srchRec->next;  
-  }
-  
-  //printf("findSceneRec--\n");
-   
-  return srchRec;
+	db = sdb_init_db(dbFilename, sdbtGetRecordSize, sdbtCheckDeleted,
+			sdbtCheckIgnored, sdbtMarkDeleted,
+			(consolidation_processing_f) sdbtErrorComment, SDB_TYPE_TEXT, 0);
+	sdb_consolidate_db(&db);
 }
 
-/*********************************************************************
- * @fn      getFreeSceneId
- *
- * @brief   Finds the next (hieghst) free scene ID.
- *
- *
- * @return  none
- */
-static uint16_t getFreeSceneId( void )
+static char * sceneListComposeRecord(sceneRecord_t *scene, char * record)
 {
-  sceneRecord_t *srchRec = sceneRecordHead;
-  uint16_t heighestSceneIdx = 0;
-  
-  //printf("getFreeSceneId++\n");
-  
-  // find record
-  while ( srchRec ) 
-  {
-    //printf("getFreeSceneId: srchRec->sceneId %x\n", srchRec->sceneId);
-    if(heighestSceneIdx < srchRec->sceneId)
-    {
-       heighestSceneIdx = srchRec->sceneId;
-    }
-       
-    srchRec = srchRec->next;  
-  }
-  
-  heighestSceneIdx++;
-  
-  //printf("getFreeSceneId--: %x\n", heighestSceneIdx);
-   
-  return (heighestSceneIdx);
+	sceneMembersRecord_t *sceneMembers;
+
+	sprintf(record, "        0x%04X , 0x%02X , \"%s\"", //leave a space at the beginning to mark this record as deleted if needed later, or as bad format (can happen if edited manually). Another space to write the reason of bad format.
+			scene->groupId, scene->sceneId, scene->name ? scene->name : "");
+
+	sceneMembers = scene->members;
+
+	while (sceneMembers != NULL)
+	{
+		sprintf(record + strlen(record), " , 0x%04X , 0x%02X",
+				sceneMembers->nwkAddr, sceneMembers->endpoint);
+		sceneMembers = sceneMembers->next;
+	}
+
+	sprintf(record + strlen(record), "\n");
+
+	return record;
 }
 
-/***************************************************************************************************
- * @fn      writeSceneListToFile - store scene list.
- *
- * @brief   
- * @param   
- *
- * @return 
- ***************************************************************************************************/
-static void writeSceneListToFile( sceneRecord_t *scene )
+#define MAX_SUPPORTED_SCENE_NAME_LENGTH 32
+#define MAX_SUPPORTED_SCENE_MEMBERS 20
+
+static sceneRecord_t * sceneListParseRecord(char * record)
 {
-  FILE *fpSceneFile;
-  
-  //printf("writeSceneListToFile++\n");
-  
-  fpSceneFile = fopen("scenelistfile.dat", "a+b");
+	char * pBuf = record + 1; //+1 is to ignore the 'for deletion' mark that may just be added to this record.
+	static sceneRecord_t scene;
+	static char sceneName[MAX_SUPPORTED_SCENE_NAME_LENGTH + 1];
+	static sceneMembersRecord_t member[MAX_SUPPORTED_SCENE_MEMBERS];
+	sceneMembersRecord_t ** nextMemberPtr;
+	parsingResult_t parsingResult =
+	{ SDB_TXT_PARSER_RESULT_OK, 0 };
+	int i;
 
-  if(fpSceneFile)
-  {
-    //printf("writeSceneListToFile: opened file\n");
-    
-    //printf("writeSceneListToFile: Store scene: sceneId %x, sceneNameLen %x, sceneName %s\n", scene->sceneId, (scene->sceneNameStr[0] + 1), scene->sceneNameStr);
-    //Store scene
-    fwrite((const void *) &(scene->groupId), 2, 1, fpSceneFile);    
-    fwrite((const void *) &(scene->sceneId), 1, 1, fpSceneFile);
-    fwrite((const void *) &(scene->sceneNameStr[0]), 1, 1, fpSceneFile);    
-    fwrite((const void *) &(scene->sceneNameStr[1]), (scene->sceneNameStr[0]), 1, fpSceneFile);
-    
-    //write scene delimeter
-    fwrite((const void *) ";", 1, 1, fpSceneFile);
-    
-    fflush(fpSceneFile);
-    fclose(fpSceneFile); 
-  }
+	if (record == NULL)
+	{
+		return NULL;
+	}
+
+	sdb_txt_parser_get_numeric_field(&pBuf, (uint8_t *) &scene.groupId, 2, FALSE,
+			&parsingResult);
+	sdb_txt_parser_get_numeric_field(&pBuf, (uint8_t *) &scene.sceneId, 1, FALSE,
+			&parsingResult);
+	sdb_txt_parser_get_quoted_string(&pBuf, sceneName,
+			MAX_SUPPORTED_SCENE_NAME_LENGTH, &parsingResult);
+	nextMemberPtr = &scene.members;
+	for (i = 0;
+			(parsingResult.code == SDB_TXT_PARSER_RESULT_OK)
+					&& (i < MAX_SUPPORTED_SCENE_MEMBERS); i++)
+	{
+		*nextMemberPtr = &(member[i]);
+		sdb_txt_parser_get_numeric_field(&pBuf, (uint8_t *) &(member[i].nwkAddr), 2,
+				FALSE, &parsingResult);
+		sdb_txt_parser_get_numeric_field(&pBuf, (uint8_t *) &(member[i].endpoint),
+				1, FALSE, &parsingResult);
+		nextMemberPtr = &(member[i].next);
+	}
+	*nextMemberPtr = NULL;
+
+	if ((parsingResult.code != SDB_TXT_PARSER_RESULT_OK)
+			&& (parsingResult.code != SDB_TXT_PARSER_RESULT_REACHED_END_OF_RECORD))
+	{
+		sdbtMarkError(db, record, &parsingResult);
+		return NULL;
+	}
+
+	if (strlen(sceneName) > 0)
+	{
+		scene.name = sceneName;
+	}
+	else
+	{
+		scene.name = NULL;
+	}
+
+	return &scene;
 }
 
-/***************************************************************************************************
- * @fn      readSceneListFromFile - restore the scene list.
- *
- * @brief   
- *
- * @return 
- ***************************************************************************************************/
-static void readSceneListFromFile( void )
+static int sceneListCheckKeyId(char * record, uint8_t * key)
 {
-  FILE *fpSceneFile;
-  sceneRecord_t *scene;
-  uint32_t fileSize, sceneStrIdx=0, bytesRead=0;
-  char *fileBuf;
-    
-  //printf("readSceneListFromFile++\n");
-  fpSceneFile = fopen("scenelistfile.dat", "a+b");
+	sceneRecord_t * scene;
+	int result = SDB_CHECK_KEY_NOT_EQUAL;
 
-  if(fpSceneFile)
-  {    
-    //printf("readSceneListFromFile: file opened\n");
+	scene = sceneListParseRecord(record);
+	if (scene == NULL)
+	{
+		return SDB_CHECK_KEY_ERROR;
+	}
 
-    //read the file into a buffer  
-    fseek(fpSceneFile, 0, SEEK_END);
-    fileSize = ftell(fpSceneFile);
-    rewind(fpSceneFile);  
-    fileBuf = (char*) calloc(sizeof(char), fileSize);  
-    bytesRead = fread(fileBuf, 1, fileSize, fpSceneFile);
-    
-    //printf("readSceneListFromFile: read file [%d:%d]\n", fileSize, bytesRead);
-    
-    if(fileBuf)
-    {
-      //printf("readSceneListFromFile: processing filebuf. sceneStrIdx: %x, (sceneStrIdx + fileBuf[sceneStrIdx + 2] + 2) : %x \n", sceneStrIdx, (sceneStrIdx + fileBuf[sceneStrIdx + 2] + 2));
-      
-      //read scene if there is a full scene to read (uint16_t groupId + uint8_t sceneId + string length byte + string length (stored in byte before string) )
-      while((sceneStrIdx + fileBuf[sceneStrIdx + 3] + 2 + 1 + 1) < fileSize)
-      {
-        uint16_t groupId = (uint16_t) fileBuf[sceneStrIdx];
-        uint8_t sceneId = (uint8_t) fileBuf[sceneStrIdx + 2];        
-                       
-        scene = createSceneRec(&(fileBuf[(sceneStrIdx + 3)]), sceneId, groupId, 0);              
-        
-        //printf("readSceneListFromFile: scene ID %s read\n", fileBuf[sceneStrIdx]);
-        
-        //index past GroupId + SceneId + sceneNameStrLen + sceneNameStr + ';'
-        sceneStrIdx += (fileBuf[sceneStrIdx + 3] + 2 + 1 + 1) + 1;
-      }
-      
-      //printf("readSceneListFromFile: processed filebuf\n");      
-      
-      free(fileBuf);
-    }
-    
-    fflush(fpSceneFile);
-    fclose(fpSceneFile);    
-  }
-  
-  //printf("readSceneListFromFile--\n");
+	if (scene->sceneId == *key)
+	{
+		result = SDB_CHECK_KEY_EQUAL;
+	}
+
+	return result;
 }
 
-/*********************************************************************
- * @fn      devListRestorDevices
- *
- * @brief   create a device list from file.
- *
- * @param   none
- *
- * @return  none
- */
-void sceneListRestorScenes( void )
+static int sceneListCheckKeyNameGid(char * record, scene_key_NA_GID * key)
 {
-  //printf("sceneListRestorScenes++\n");
-  
-  if( sceneRecordHead == NULL)
-  {
-    readSceneListFromFile();
-  }
-  //else do what, should we delete the list and recreate from the file?
-  
-  //printf("sceneListRestorScenes--\n");
+	sceneRecord_t * scene;
+	int result = SDB_CHECK_KEY_NOT_EQUAL;
+
+	scene = sceneListParseRecord(record);
+	if (scene == NULL)
+	{
+		return SDB_CHECK_KEY_ERROR;
+	}
+
+	if ( (strcmp(scene->name, key->name) == 0) && (scene->groupId == key->groupId) )
+	{
+		result = SDB_CHECK_KEY_EQUAL;
+	}
+
+	return result;
 }
 
-/*********************************************************************
- * @fn      devListDescoverDevice
- *
- * @brief   Descovers a Scene.
- *
- * @param   table
- * @param   rmTimer
- *
- * @return  none
- */
-void sceneListDescoverScene( char *sceneNameStr )
-{  
-  //printf("sceneListDescoverDevice++\n");
-  
-  //Need to BCast a get scene membership
-  
-  //printf("sceneListDescoverDevice--\n");
+static sceneRecord_t * sceneListGetSceneByNameGid(char *sceneNameStr, uint16_t groupId)
+{
+	char * rec;
+	scene_key_NA_GID key;
+
+	key.groupId = groupId;
+	key.name = sceneNameStr;
+
+	rec = SDB_GET_UNIQUE_RECORD(db, &key, (check_key_f)sceneListCheckKeyNameGid);
+	if (rec == NULL)
+	{
+		return NULL;
+	}
+
+	return sceneListParseRecord(rec);
 }
 
-/*********************************************************************
- * @fn      sceneListGetNextScene
- *
- * @brief   Return the next scene in the list.
- *
- * @param   sceneNameStr - if NULL it will return head of the list
- *          groupId - group that the scene is apart of, ignored if sceneStr is NULL.
- *
- * @return  sceneListItem_t, return next scene from sceneNameStr supplied or 
- *          NULL if at end of the list
- */
-sceneListItem_t* sceneListGetNextScene( char *sceneNameStr, uint16_t groupId )
-{  
-  sceneRecord_t *srchRec = sceneRecordHead;
-  sceneListItem_t *sceneItem = NULL;
-  
-  //printf("sceneListGetNextScene++\n");
-  
-  if(sceneNameStr != NULL)
-  {
-    //printf("sceneListGetNextScene: sceneNameStr != NULL\n");
-    
-    //Find the record for previous scene found
-    srchRec = findSceneRec( sceneNameStr, groupId );
-    //printf("sceneListGetNextScene: findSceneRec %x \n", (uint32_t) srchRec);
-    //get the next record (may be NULL if at end of list)
-    srchRec = srchRec->next;
-    //printf("sceneListGetNextScene: findSceneRec next  %x \n", (uint32_t) srchRec);
-    //Store the sceneItem
-    if(srchRec)
-    {
-      //printf("sceneListGetNextScene: storing sceneItem, sceneId %x, groupId %x\n", srchRec->sceneId, srchRec->groupId);
-      sceneItem = malloc(sizeof(sceneListItem_t));
-      if(sceneItem)
-      {
-        sceneItem->groupId = srchRec->groupId;
-        sceneItem->sceneId = srchRec->sceneId;
-        sceneItem->sceneNameStr = malloc(srchRec->sceneNameStr[0] + 1);
-        if(sceneItem->sceneNameStr)
-        {
-          strncpy(sceneItem->sceneNameStr, srchRec->sceneNameStr, (srchRec->sceneNameStr[0] + 1));
-        }
-      }
-    }
-        
-  }
-  else if(sceneRecordHead)
-  {
-    //else return the head of revord
-    sceneItem = malloc(sizeof(sceneListItem_t));
-    if(sceneItem)
-    {      
-      sceneItem->groupId = sceneRecordHead->groupId;
-      sceneItem->sceneId = sceneRecordHead->sceneId;
-      sceneItem->sceneNameStr = malloc(sceneRecordHead->sceneNameStr[0] + 1);
-      if(sceneItem->sceneNameStr)
-      {
-        strncpy(sceneItem->sceneNameStr, sceneRecordHead->sceneNameStr, (sceneRecordHead->sceneNameStr[0] + 1));
-      }
-    }
-  }
-  
-  //printf("sceneListGetNextScene--\n");
-  
-  return (sceneItem);
+static uint8_t sceneListGetUnusedSceneId(void)
+{
+	static uint8_t lastUsedSceneId = 0;
+
+	lastUsedSceneId++;
+
+	while (SDB_GET_UNIQUE_RECORD(db, &lastUsedSceneId, (check_key_f)sceneListCheckKeyId)
+			!= NULL)
+	{
+		lastUsedSceneId++;
+	}
+
+	return lastUsedSceneId;
 }
 
 /*********************************************************************
@@ -412,26 +238,29 @@ sceneListItem_t* sceneListGetNextScene( char *sceneNameStr, uint16_t groupId )
  */
 uint8_t sceneListAddScene( char *sceneNameStr, uint16_t groupId )
 {
-  uint8_t sceneId = 0;
-  sceneRecord_t *scene;
-  
-  //printf("sceneListAddScene++\n");
-  
-  scene = findSceneRec( sceneNameStr, groupId );
-  
-  if( scene == NULL)
-  {     
-    sceneId = getFreeSceneId();
-    createSceneRec( sceneNameStr, sceneId, groupId, 1);
-  }
-  else
-  {
-    sceneId = scene->sceneId;
-  }
-  
-  //printf("sceneListAddScene--\n");
-  
-  return sceneId;
+	sceneRecord_t *exsistingScene;
+	sceneRecord_t newScene;
+	char rec[MAX_SUPPORTED_RECORD_SIZE];
+
+	exsistingScene = sceneListGetSceneByNameGid(sceneNameStr, groupId);
+
+	if (exsistingScene != NULL)
+	{
+		return exsistingScene->sceneId;
+	}
+
+	newScene.groupId = groupId;
+	newScene.sceneId = sceneListGetUnusedSceneId();
+	newScene.name = sceneNameStr;
+	newScene.members = NULL;
+
+	sceneListComposeRecord(&newScene, rec);
+
+	sdb_add_record(db, rec);
+
+	//printf("SceneListAddScene--\n");
+
+	return newScene.sceneId;
 }
 
 /*********************************************************************
@@ -445,10 +274,8 @@ uint8_t sceneListGetSceneId( char *sceneNameStr, uint16_t groupId )
 {
   uint8_t sceneId = 0;
   sceneRecord_t *scene;
-  
-  //printf("sceneListGetSceneId++\n");
-  
-  scene = findSceneRec( sceneNameStr, groupId );
+
+  scene = sceneListGetSceneByNameGid(sceneNameStr, groupId);
   
   if( scene == NULL)
   {     
@@ -462,4 +289,34 @@ uint8_t sceneListGetSceneId( char *sceneNameStr, uint16_t groupId )
   //printf("sceneListGetSceneId--\n");
   
   return sceneId;
+}
+
+/*********************************************************************
+ * @fn      sceneListGetNextScene
+ *
+ * @brief   Return the next scene in the list.
+ *
+ * @param   context	Pointer to the current scene record
+ *
+ * @return  sceneRecord_t, return next scene record in the DB
+ */
+sceneRecord_t* sceneListGetNextScene(uint32_t *context)
+{
+	char * rec;
+	sceneRecord_t *scene;
+
+	do
+	{
+		rec = SDB_GET_NEXT_RECORD(db,context);
+
+		if (rec == NULL)
+		{
+			return NULL;
+		}
+
+		scene = sceneListParseRecord(rec);
+	}
+	while (scene == NULL); //in case of a bad-format record - skip it and read the next one
+
+	return scene;
 }

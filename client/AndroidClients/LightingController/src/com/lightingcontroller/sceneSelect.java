@@ -186,8 +186,7 @@ public class sceneSelect extends Activity {
 				List<ZigbeeGroup> groupList = ZigbeeAssistant.getGroups();				
 				ZigbeeAssistant.newScene(t.getText().toString(), groupList.get(currGroup).getGroupId() );							
 		    	//set selection to the new group, which will be last as this is a new one						
-		    	currScene = sceneSpinnerAdapter.getCount();				    	
-		    	new waitRspTask().execute("Create Scene");				    	
+		    	currScene = sceneSpinnerAdapter.getCount();				    					    	
 		    	sceneSpinner.setSelection(currScene);
 		    	//update the spinner
 		    	addItemsOnSceneSpinner();					    					    
@@ -195,76 +194,7 @@ public class sceneSelect extends Activity {
 		})	    	    		
 		.setNegativeButton("Cancel", null)
 		.show();	    	
-	}
-         
-
-
-    class waitRspTask extends AsyncTask<String , Integer, Void>
-    {
-    	private boolean rspSuccess;
-    	String param;
-        @Override
-        protected void onPreExecute()
-        {
-            bar = new ProgressDialog(sceneSelect.this);
-            bar.setMessage("Processing..");
-            bar.setIndeterminate(true);
-            bar.show();
-        } 
-        @Override
-        protected Void doInBackground(String... params) 
-        {
-        	param = params[0];
-        	List<ZigbeeScene> sceneList = ZigbeeAssistant.getScenes();
-        	//currGroup = 0;
-            for(int i=0;i<10;i++)
-            {
-            	if(currScene < sceneList.size())
-            	{
-	            	//check if group response updated the groupId          
-	            	if (sceneList.get(currScene).getStatus() == ZigbeeScene.sceneStatusActive)
-	            	{
-	            		rspSuccess = true;
-	            		return null;
-	            	}
-            	}
-	            	
-	            try
-	            {
-	                Thread.sleep(500);
-	            }
-	            catch(Exception e)
-	            {
-	                System.out.println(e);
-	            }    
-            	            
-            }
-            					
-            rspSuccess = false;    
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) 
-        {
-            bar.dismiss();
-            
-            if (rspSuccess == false)
-        	{
-    	    	AlertDialog show = new AlertDialog.Builder(sceneSelect.this)
-    			.setTitle(param)
-    			.setMessage("No response from gateway. " + param + " failed.")
-    			.setPositiveButton("OK",             
-    			new DialogInterface.OnClickListener()
-    			{			
-    				public void onClick(DialogInterface dialoginterface,int i){				    	
-    				}		
-    			})	    	    		
-    			.show();
-        	}
-            
-        }
-    }
-        
+	}                 
 
     public void sceneStoreButton(View view) {
     	

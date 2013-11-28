@@ -205,8 +205,7 @@ public class groupSelect extends Activity {
 			public void onClick(DialogInterface dialoginterface,int i){				    				    	
 					ZigbeeAssistant.newGroup(t.getText().toString() );							
 			    	//set selection to the new group, which will be last as this is a new one						
-			    	currGroup = groupSpinnerAdapter.getCount();				    	
-			    	new waitRspTask().execute("Create Group");				    	
+			    	currGroup = groupSpinnerAdapter.getCount();				    					    	
 			    	groupSpinner.setSelection(currGroup);
 			    	//update the spinner
 			    	addItemsOnGroupSpinner();					    					    
@@ -214,75 +213,7 @@ public class groupSelect extends Activity {
 		})	    	    		
 		.setNegativeButton("Cancel", null)
 		.show();	    	
-	}
-         
-
-
-    class waitRspTask extends AsyncTask<String , Integer, Void>
-    {
-    	private boolean rspSuccess;
-    	String param;
-        @Override
-        protected void onPreExecute()
-        {
-            bar = new ProgressDialog(groupSelect.this);
-            bar.setMessage("Processing..");
-            bar.setIndeterminate(true);
-            bar.show();
-        } 
-        @Override
-        protected Void doInBackground(String... params) 
-        {
-        	param = params[0];
-        	List<ZigbeeGroup> groupList = ZigbeeAssistant.getGroups();
-        	//currGroup = 0;
-            for(int i=0;i<10;i++)
-            {
-            	if(currGroup < groupList.size())
-            	{
-	            	//check if group response updated the groupId          
-	            	if (groupList.get(currGroup).getStatus() == ZigbeeGroup.groupStatusActive)
-	            	{
-	            		rspSuccess = true;
-	            		return null;
-	            	}
-            	}
-	            	
-	            try
-	            {
-	                Thread.sleep(500);
-	            }
-	            catch(Exception e)
-	            {
-	                System.out.println(e);
-	            }    
-            	            
-            }
-            					
-            rspSuccess = false;    
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) 
-        {
-            bar.dismiss();
-            
-            if (rspSuccess == false)
-        	{
-    	    	AlertDialog show = new AlertDialog.Builder(groupSelect.this)
-    			.setTitle(param)
-    			.setMessage("No response from gateway. " + param + " failed.")
-    			.setPositiveButton("OK",             
-    			new DialogInterface.OnClickListener()
-    			{			
-    				public void onClick(DialogInterface dialoginterface,int i){				    	
-    				}		
-    			})	    	    		
-    			.show();
-        	}
-            
-        }
-    }
+	}         
         
 
     public void addToGroupCmdButton(View view) {
@@ -326,11 +257,11 @@ public class groupSelect extends Activity {
     	ToggleButton idLightButton = (ToggleButton) findViewById(R.id.IdLightToggle);
     	if (idLightButton.isChecked())
     	{
-    		//ZigbeeAssistant.Identify(currDevice, (short) 0x80);
+    		ZigbeeAssistant.IdentifyDevice(currDevice, (short) 0x80);
     	}
     	else
     	{
-    		//ZigbeeAssistant.Identify(currDevice, (short) 0);    		
+    		ZigbeeAssistant.IdentifyDevice(currDevice, (short) 0);    		
     	}    
     }
     
@@ -341,11 +272,11 @@ public class groupSelect extends Activity {
     			
     	if (idGroupButton.isChecked())
     	{
-    		//ZigbeeAssistant.Identify(group, (short) 0xFFFF);
+    		ZigbeeAssistant.IdentifyGroup(group, (short) 0xFFFF);
     	}
     	else
     	{
-    		//ZigbeeAssistant.Identify(group, (short) 0);    		
+    		ZigbeeAssistant.IdentifyGroup(group, (short) 0);    		
     	}     	
     }
     	

@@ -3,7 +3,7 @@
   Revised:        $Date: 2012-03-21 17:37:33 -0700 (Wed, 21 Mar 2012) $
   Revision:       $Revision: 246 $
 
-  Description:    This file contains an example client for the zllGateway sever
+  Description:    This file contains an example client for the zbGateway sever
 
   Copyright (C) {2012} Texas Instruments Incorporated - http://www.ti.com/
 
@@ -59,11 +59,11 @@ int keyFd;
 #define CONSOLEDEVICE "/dev/console"
 
 void sendLightState(uint16_t addr, uint16_t addrMode, uint16_t ep, uint8_t state);
-void socketClientZllCb( msgData_t *msg );
+void socketClientCb( msgData_t *msg );
 
-typedef uint8_t (*rpcsProcessMsg_t)(msgData_t *msg);
+typedef uint8_t (*srpcProcessMsg_t)(msgData_t *msg);
 
-rpcsProcessMsg_t rpcsProcessSeIncoming[] =
+srpcProcessMsg_t rpcsProcessSeIncoming[] =
 {  
 };
 
@@ -77,8 +77,9 @@ int main(int argc, char *argv[])
 {
   uint16_t  addr, period, loops;
   uint8_t addrMode, ep, cnt=0;
+  uint32 start_with = 0;
       
-  if(argc != 6)
+  if(argc < 6)
   {
     printf("Expected 4 and got %d params Usage: %s <device/group addr> <addr mode> <ep> <periodms> <loops>\n", argc, argv[0] );
     printf("Example - Unicast command of nwk addr 0xb85a ep 0xb every 1s: %s 0xb85a 2 0xb 1000 0\n", argv[0] );
@@ -101,9 +102,15 @@ int main(int argc, char *argv[])
     
     sscanf(argv[5], "%d", &tmpInt);    
     loops = (uint16_t) tmpInt;
+
+    if (argc > 6)
+	{
+      start_with = atoi(argv[6]);
+    }
+		
   }
       
-  socketClientInit("127.0.0.1:11235", socketClientZllCb);
+  socketClientInit("127.0.0.1:11235", socketClientCb);
   
   if(loops != 0)
     loops+=2;
@@ -112,13 +119,13 @@ int main(int argc, char *argv[])
   while(loops != 2)
   {    
     printf("Toggling Light %x:%x - %d\n", addr, ep, cnt++ );
-    if((loops % 2) ==0) 
+    if((loops % 2) == start_with) 
     {
-      sendLightState(addr, addrMode, ep, 0);
+      sendLightState(addr, addrMode, ep, 1);
     }
     else
     {
-      sendLightState(addr, addrMode, ep, 1);
+      sendLightState(addr, addrMode, ep, 0);
     }
           
     usleep(period * 1000);
@@ -135,7 +142,7 @@ int main(int argc, char *argv[])
 }
 
 //Process the message from HA-Interface
-void socketClientZllCb( msgData_t *msg )
+void socketClientCb( msgData_t *msg )
 {
   //for now we are not interested in messages from HA server
 }
@@ -145,7 +152,7 @@ void sendLightState(uint16_t addr, uint16_t addrMode, uint16_t ep, uint8_t state
   msgData_t msg;
   uint8_t* pRpcCmd = msg.pData;		 
   		
-  msg.cmdId = RPCS_SET_DEV_STATE;
+  msg.cmdId = SRPC_SET_DEV_STATE;
   msg.len = 15;
   //Addr Mode
   *pRpcCmd++ = (afAddrMode_t)addrMode;

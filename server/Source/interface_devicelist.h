@@ -40,20 +40,27 @@
 #define INTERFACE_DEVICELIST_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-
 
 /*********************************************************************
  * INCLUDES
  */
 #include <stdint.h>
-#include "zllSocCmd.h"
+#include "zbSocCmd.h"
+#include "hal_types.h"
 
 //device states
 #define DEVLIST_STATE_NOT_ACTIVE    0
 #define DEVLIST_STATE_ACTIVE        1
+
+#define MAX_SUPPORTED_DEVICE_NAME_LENGTH 32
+
+typedef struct
+{
+	void *next;
+	epInfo_t epInfo;
+}deviceRecord_t;
 
 /*
  * devListAddDevice - create a device and add a rec to the list.
@@ -61,9 +68,9 @@ extern "C"
 void devListAddDevice( epInfo_t *epInfo);
 
 /*
- * devListRemoveDevice - remove a device rec from the list.
+ * devListRemoveDeviceByNaEp - remove a device rec from the list.
  */
-void devListRemoveDevice( uint16_t nwkAddr, uint8_t endpoint );
+epInfo_t * devListRemoveDeviceByNaEp( uint16_t nwkAddr, uint8_t endpoint );
 
 /*
  * devListNumDevices - get the number of devices in the list.
@@ -71,19 +78,17 @@ void devListRemoveDevice( uint16_t nwkAddr, uint8_t endpoint );
 uint32_t devListNumDevices( void );
 
 /*
- * devListGetNextDev - Return the next device in the list.
+ * devListInitDatabase - restore device list from file.
  */
-epInfo_t* devListGetNextDev( uint16_t nwkAddr, uint8_t endpoint );
+void devListInitDatabase( char * dbFilename );
 
-/*
- * devListChangeDeviceName - Return the next device in the listchange device name.
- */
-void devListChangeDeviceName( uint16_t devNwkAddr, uint8_t devEndpoint, char *deviceNameStr);
+epInfo_t * devListGetNextDev(uint32 *context);
 
-/*
- * devListRestorDevices - restore device list from file.
- */
-void devListRestorDevices( void );
+epInfo_t * devListGetDeviceByIeeeEp( uint8_t ieeeAddr[8], uint8_t endpoint );
+
+epInfo_t * devListGetDeviceByNaEp( uint16_t nwkAddr, uint8_t endpoint );
+
+epInfo_t * devListRemoveDeviceByIeee( uint8_t ieeeAddr[8] );
 
 #ifdef __cplusplus
 }
