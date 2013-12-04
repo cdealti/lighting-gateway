@@ -5,7 +5,7 @@ DEVICE = COORDINATOR
 #Relative project path
 PROJ_DIR = 
 
-INCLUDE = -I$(PROJ_DIR)../../../../server/Source  -I$(PROJ_DIR)../../Source -I$(PROJ_DIR)../Source
+INCLUDE = -I$(PROJ_DIR)../../../../zbSocDriver -I$(PROJ_DIR)../../../../server/Source  -I$(PROJ_DIR)../../Source -I$(PROJ_DIR)../Source
 LIBS = -lpthread
 
 #CC= /data/opt/vendors/codesourcery/lite/arm-2009q1-203/bin/arm-none-linux-gnueabi-gcc

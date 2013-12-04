@@ -151,11 +151,13 @@ void sendOpenNetwork(uint8_t duration)
 
 	printf("sendOpenNetwork++: duration=%d\n", duration);
 
-	msg.cmdId = SRPC_OPEN_NETWORK;
-	msg.len = 3;
+	msg.cmdId = SRPC_PERMIT_JOIN;
+	msg.len = 5;
 
 	//duration
 	*pRpcCmd++ = duration;
+  *pRpcCmd++ = JOIN_AUTH_NUM & 0xFF;
+  *pRpcCmd++ = (JOIN_AUTH_NUM & 0xFF00) >> 8;
 
 	socketClientSendData(&msg);
 }

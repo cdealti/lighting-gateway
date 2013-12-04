@@ -86,6 +86,7 @@ len,   /*RPC payload Len                                      */     \
 #define ZLL_MT_APP_RPC_CMD_JOIN_HA            0x04
 #define ZLL_MT_APP_RPC_CMD_PERMIT_JOIN        0x05
 #define ZLL_MT_APP_RPC_CMD_SEND_RESET_TO_FN   0x06
+#define ZLL_MT_APP_RPC_CMD_START_DISTRIB_NWK  0x07
 
 #define MT_APP_RSP                           0x80
 #define MT_APP_ZLL_TL_IND                    0x81
@@ -388,6 +389,30 @@ void zbSocTouchLink(void)
 }
 
 /*********************************************************************
+ * @fn      zbSocBridgeStartNwk
+ *
+ * @brief   Send the start network command to the CC253x.
+ *
+ * @param   none
+ *
+ * @return  none
+ */
+void zbSocBridgeStartNwk(void)
+{
+	uint8_t cmd[] =
+	{ APPCMDHEADER(13) 0x06, //Data Len
+			0x02, //Address Mode
+			0x00,//2dummy bytes
+			0x00, ZLL_MT_APP_RPC_CMD_START_DISTRIB_NWK, 0x00, //
+			0x00, //
+			0x00 //FCS - fill in later
+			};
+
+	calcFcs(cmd, sizeof(cmd));
+	zbSocTransportWrite(cmd, sizeof(cmd));
+}
+
+/*********************************************************************
  * @fn      zbSocResetToFn
  *
  * @brief   Send the reset to factory new command to the CC253x.
@@ -446,21 +471,40 @@ void zbSocSendResetToFn(void)
  */
 void zbSocOpenNwk(uint8_t duration)
 {
-	uint8_t cmd[] =
+	uint16_t srcNwkAddr = 0xFFFD; //Everyone with RxOnWhenIdle == TRUE
+
+	uint8_t mgmtPermit[] =
+	{ 0xFE, 5, /*RPC payload Len */
+	MT_RPC_CMD_SREQ | MT_RPC_SYS_ZDO,
+	0x36, /*MT_ZDO_MGMT_PERMIT_JOIN_REQ*/
+	afAddrBroadcast, //addr mode
+	(srcNwkAddr & 0x00ff), /*Src Nwk Addr - To send the bind message to*/
+	(srcNwkAddr & 0xff00) >> 8, /*Src Nwk Addr - To send the bind message to*/
+	duration, /*Dst endpoint for the binding*/
+	1, /*trust center significance set*/
+	0x00 //FCS - fill in later
+	};
+
+	uint8_t localPermit[] =
 	{ APPCMDHEADER(13) 0x06, //Data Len
 			0x02, //Address Mode
 			0x00,//2dummy bytes
-			0x00, ZLL_MT_APP_RPC_CMD_PERMIT_JOIN, 0x00, //
+			0x00, ZLL_MT_APP_RPC_CMD_PERMIT_JOIN,
+			duration, //
 			0x00, //
 			0x00 //FCS - fill in later
 			};
 
-	cmd[15] = duration;
-
 	printf("zbSocOpenNwk: duration %ds\n", duration);
 
-	calcFcs(cmd, sizeof(cmd));
-	zbSocTransportWrite(cmd, sizeof(cmd));
+	calcFcs(localPermit, sizeof(localPermit));
+	zbSocTransportWrite(localPermit, sizeof(localPermit));
+
+	//wait for message to be consumed
+	usleep(30);
+
+	calcFcs(mgmtPermit, sizeof(mgmtPermit));
+	zbSocTransportWrite(mgmtPermit, sizeof(mgmtPermit));
 }
 
 /*********************************************************************

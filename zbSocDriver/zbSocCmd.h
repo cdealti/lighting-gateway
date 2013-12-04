@@ -125,6 +125,8 @@ void zbSocTouchLink(void);
 void zbSocResetToFn(void);
 void zbSocSendResetToFn(void);
 void zbSocOpenNwk(uint8_t duration);
+void zbSocBridgeStartNwk(void);
+
 //ZCL Set API's
 void zbSocSetState(uint8_t state, uint16_t dstAddr, uint8_t endpoint,
 		uint8_t addrMode);
