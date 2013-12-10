@@ -37,7 +37,7 @@ public final class R {
         public static final int layoutborder=0x7f02000a;
         public static final int popup=0x7f02000b;
         public static final int tilogo=0x7f02000c;
-        public static final int tizllicon=0x7f02000d;
+        public static final int zllapplogo=0x7f02000d;
     }
     public static final class id {
         public static final int FrameLable03=0x7f080034;

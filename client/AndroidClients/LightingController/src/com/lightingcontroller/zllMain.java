@@ -299,6 +299,7 @@ public class zllMain extends Activity {
             
             if (rspSuccess == false)
         	{
+            	/* take no action for now 
     	    	AlertDialog show = new AlertDialog.Builder(zllMain.this)
     			.setTitle(param)
     			.setMessage("Device " + zllMain.currDevice.Name + " Not Responding.")
@@ -308,7 +309,7 @@ public class zllMain extends Activity {
     				public void onClick(DialogInterface dialoginterface,int i){				    	
     				}		
     			})	    	    		
-    			.show();
+    			.show();*/
         	}
             
         }

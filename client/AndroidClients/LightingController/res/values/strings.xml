@@ -2,7 +2,7 @@
 <resources>
 
     <string name="hello">Hello World, UART_Jni!</string>
-    <string name="app_name">ZllRemote</string>
+    <string name="app_name">ZllController</string>
     <string-array name="OSC">
         <item>Internal OSC</item>>
         <item>External-16M</item>>
