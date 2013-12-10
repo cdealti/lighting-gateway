@@ -67,95 +67,9 @@ public class LightingController extends Activity{
        
         new ZigbeeAssistant();                
                 
-        new waitRspTask().execute("Connecting to gateway");
-/*       
-        ///Open SRPC
-        if(connectSrcpGateway())
-        {        	
-          ZigbeeSrpcClient.getDevices();
-          ZigbeeSrpcClient.discoverGroups();
-          ZigbeeSrpcClient.discoverScenes();
-          //wait for responses
-          try { TimeUnit.MILLISECONDS.sleep(200); } catch (InterruptedException e) {e.printStackTrace();}  
-          
-          startActivity(new Intent(LightingController.this, zllMain.class));
-          finish();
-        }
-*/        
+        new waitRspTask().execute("Connecting to gateway");        
     }
    		
-    
-    private boolean connectSrcpGateway()
-    { 
-    	String gatewayIpAddr;
-
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        gatewayIpAddr = settings.getString("gatewayIpAddr", null);    
-        
-		if(gatewayIpAddr != null)
-		{
-			ZigbeeSrpcClient.setGatewayIp(gatewayIpAddr);			
-		}
-		else
-		{
-			//get IPAddr from user
-			setSrcpGatewayIpAddress();
-		}
-		
-		if( ZigbeeSrpcClient.clientConnect() == 0)
-		{
-			SharedPreferences.Editor editor = settings.edit();    	
-			editor.putString("gatewayIpAddr", gatewayIpAddr);
-		}
-		else
-		{
-			//get IPAddr from user		
-			setSrcpGatewayIpAddress();
-			return false;
-		}
-		
-		return true;
-    } 
-    
-    private void setSrcpGatewayIpAddress()
-    {  	
-     	final EditText t = new EditText(this);
-     	t.setText("192.168.1.111");
-
-    	new AlertDialog.Builder(this)
-		.setTitle("Gateway Address")
-		.setMessage("Please Enter the HA Gateway IP Address")
-		.setView(t)
-		.setPositiveButton("OK",             
-		new DialogInterface.OnClickListener()
-		{			
-			public void onClick(DialogInterface dialoginterface,int i){	
-		    	String gatewayIpAddr;
-				gatewayIpAddr = t.getText().toString();
-
-				//retrieve path setting
-  				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-  				settings.getString("gatewayIpAddr", gatewayIpAddr);	
-  				
-  				if(gatewayIpAddr != null)
-  				{
-	  		        if(connectSrcpGateway())
-	  		        {  		        	
-	  		          ZigbeeSrpcClient.getDevices();
-	  		          ZigbeeSrpcClient.discoverGroups();
-	  		          ZigbeeSrpcClient.discoverScenes();
-	  		          //wait for responses
-	  		          try { TimeUnit.MILLISECONDS.sleep(500); } catch (InterruptedException e) {e.printStackTrace();}  
-	
-	  		          startActivity(new Intent(LightingController.this, zllMain.class));  		        	
-	  		        }
-  				}
-  			}		
-		})
-		.show();     	    		
-    } 
-    
-    
     class waitRspTask extends AsyncTask<String , Integer, Void>
     {
     	private boolean rspSuccess = false;
@@ -212,7 +126,7 @@ public class LightingController extends Activity{
         		.setTitle("Gateway Address")
         		.setMessage("Please Enter the HA Gateway IP Address")
         		.setView(t)
-        		.setPositiveButton("OK",             
+        		.setPositiveButton("Connect",             
         		new DialogInterface.OnClickListener()
         		{			
         			public void onClick(DialogInterface dialoginterface,int i){	
@@ -227,8 +141,14 @@ public class LightingController extends Activity{
         		    	
         				new waitRspTask().execute("Connecting to gateway");
           			}		
-        		})
-        		.setNegativeButton("Cancel", null)
+        		})       		
+        		.setNegativeButton("Demo", 
+        		new DialogInterface.OnClickListener()
+        		{		
+        			public void onClick(DialogInterface dialoginterface,int i){	
+        				startActivity(new Intent(LightingController.this, zllMain.class));	
+          			}	        			            			
+        		}) 
         		.show();     	    		
         	}
             else
