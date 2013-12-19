@@ -169,6 +169,9 @@ len,   /*RPC payload Len                                      */     \
 /*******************************/
 #define SB_FORCE_BOOT               0xF8
 #define SB_FORCE_RUN               (SB_FORCE_BOOT ^ 0xFF)
+#define SB_FORCE_BOOT_1             0x10
+#define SB_FORCE_RUN_1             (SB_FORCE_BOOT_1 ^ 0xFF)
+
 
 typedef enum {
 	MT_RPC_CMD_POLL = 0x00,
@@ -298,8 +301,8 @@ int32_t zbSocOpen(char *devicePath)
 	tcsetattr(serialPortFd, TCSANOW, &tio);
 
 	//Send the bootloader force boot incase we have a bootloader that waits
-	uint8_t forceBoot = SB_FORCE_RUN;
-	zbSocTransportWrite(&forceBoot, 1);
+	uint8_t forceBoot[] = {SB_FORCE_RUN, SB_FORCE_RUN_1};
+	zbSocTransportWrite(forceBoot, 2);
 
 	return serialPortFd;
 }
@@ -1519,7 +1522,7 @@ void processRpcSysZdo(uint8_t *rpcBuff)
 	}
 	else
 	{
-		printf("processRpcSysZdo: Unsupported MT ZDO Msg\n");
+		//printf("processRpcSysZdo: Unsupported MT ZDO Msg\n");
 	}
 
 	return;
@@ -1677,8 +1680,7 @@ void zbSocProcessRpc(void)
 
 				default:
 				{
-					printf("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n", rpcBuff[0],
-							rpcBuff[1]);
+					//printf("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n", rpcBuff[0] , rpcBuff[1])
 					break;
 				}
 			}
